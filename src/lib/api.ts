@@ -39,13 +39,25 @@ export const authApi = {
   signIn: async (
     email: string,
     password: string,
-  ): Promise<{ user: any; error: any }> => {
+  ): Promise<{ user: any; profile: Profile | null; error: any }> => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    return { user: data.user, error };
+    let profile = null;
+    if (data.user) {
+      // Fetch the user's profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
+
+      profile = profileData;
+    }
+
+    return { user: data.user, profile, error };
   },
 
   // Sign out the current user

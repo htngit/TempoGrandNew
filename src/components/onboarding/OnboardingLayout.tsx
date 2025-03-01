@@ -25,8 +25,25 @@ const OnboardingLayout = ({
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isLastStep) {
+      // Mark onboarding as complete in the user's profile
+      try {
+        const { profileApi } = await import("@/lib/api");
+        const currentProfile = await profileApi.getCurrent();
+
+        if (currentProfile) {
+          await profileApi.update(currentProfile.id, {
+            onboarding_complete: true,
+          });
+          console.log("Onboarding marked as complete");
+        } else {
+          console.error("Could not find current user profile");
+        }
+      } catch (error) {
+        console.error("Error updating onboarding status:", error);
+      }
+
       onComplete();
       navigate("/dashboard");
     } else {

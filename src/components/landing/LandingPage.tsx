@@ -1,14 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  ChevronRight,
-  CheckCircle,
+  BookOpen,
   BarChart3,
   Users,
   Briefcase,
   Shield,
+  FileText,
+  HelpCircle,
+  Layers,
+  Settings,
+  Zap,
+  ChevronRight,
 } from "lucide-react";
 
 const LandingPage = () => {
@@ -25,79 +30,377 @@ const LandingPage = () => {
             <Link to="/login" className="text-sm font-medium hover:underline">
               Log in
             </Link>
-            <Link to="/register">
-              <Button size="sm">Sign up free</Button>
-            </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
-            Streamline Your Customer Relationships
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-10">
-            Xalesin CRM helps you manage leads, track customer interactions, and
-            close more deals with our intuitive platform.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" className="px-8">
-                Get Started Free
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button size="lg" variant="outline" className="px-8">
-                Log in
-              </Button>
-            </Link>
+      {/* Hero Section - Product Overview */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="md:w-1/2">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+                Xalesin CRM Documentation & Tutorials
+              </h1>
+              <p className="text-lg text-muted-foreground mb-6">
+                Welcome to the Xalesin CRM knowledge base. Here you'll find
+                comprehensive guides and documentation to help you get the most
+                out of your CRM system.
+              </p>
+              <div className="flex items-center space-x-2 text-primary">
+                <BookOpen className="h-5 w-5" />
+                <span className="font-medium">
+                  Explore our documentation to get started
+                </span>
+              </div>
+            </div>
+            <div className="md:w-1/2">
+              <img
+                src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop"
+                alt="CRM Dashboard Example"
+                className="rounded-lg shadow-lg w-full"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Powerful Features for Modern Businesses
+      {/* Getting Started Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-2xl font-bold mb-8 flex items-center">
+            <Zap className="mr-2 h-5 w-5 text-primary" />
+            Getting Started with Xalesin CRM
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+          <div className="grid md:grid-cols-3 gap-6 mb-10">
             <Card>
               <CardContent className="pt-6">
                 <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
-                  <Users className="h-6 w-6 text-primary" />
+                  <FileText className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Lead Management</h3>
+                <h3 className="text-lg font-bold mb-2">1. Account Setup</h3>
+                <p className="text-muted-foreground mb-4">
+                  Learn how to create your account, set up your organization
+                  profile, and invite team members.
+                </p>
+                <Link
+                  to="#"
+                  className="text-primary hover:underline flex items-center text-sm"
+                >
+                  Read the guide <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">2. Managing Contacts</h3>
+                <p className="text-muted-foreground mb-4">
+                  Discover how to import, organize, and manage your contacts
+                  effectively in the system.
+                </p>
+                <Link
+                  to="#"
+                  className="text-primary hover:underline flex items-center text-sm"
+                >
+                  Read the guide <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
+                  <Layers className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">3. Lead Management</h3>
+                <p className="text-muted-foreground mb-4">
+                  Learn the best practices for tracking leads through your sales
+                  pipeline.
+                </p>
+                <Link
+                  to="#"
+                  className="text-primary hover:underline flex items-center text-sm"
+                >
+                  Read the guide <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="bg-muted/30 p-6 rounded-lg">
+            <h3 className="text-lg font-bold mb-2">
+              Video Tutorial: Quick Start Guide
+            </h3>
+            <div className="aspect-video bg-black/10 rounded-lg flex items-center justify-center mb-4">
+              <div className="text-center">
+                <FileText className="h-12 w-12 text-primary/50 mx-auto mb-2" />
                 <p className="text-muted-foreground">
-                  Capture, organize, and nurture leads through your sales
-                  pipeline with customizable stages.
+                  Video tutorial placeholder
+                </p>
+              </div>
+            </div>
+            <p className="text-muted-foreground">
+              This comprehensive video walks you through the essential features
+              of Xalesin CRM to help you get up and running quickly.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Features & Tutorials */}
+      <section className="py-16 px-4 bg-muted/20">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-2xl font-bold mb-8">Feature Tutorials</h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">Contact Management</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Importing Contacts</p>
+                      <p className="text-sm text-muted-foreground">
+                        Learn how to bulk import contacts from CSV files or
+                        other CRM systems.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Contact Segmentation</p>
+                      <p className="text-sm text-muted-foreground">
+                        Create custom fields and tags to organize contacts by
+                        categories.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Activity Tracking</p>
+                      <p className="text-sm text-muted-foreground">
+                        Record and monitor all interactions with your contacts.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">
+                    Analytics & Reporting
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Dashboard Customization</p>
+                      <p className="text-sm text-muted-foreground">
+                        Create personalized dashboards with the metrics that
+                        matter to you.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Sales Performance Reports</p>
+                      <p className="text-sm text-muted-foreground">
+                        Track team and individual performance with detailed
+                        reports.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Data Export</p>
+                      <p className="text-sm text-muted-foreground">
+                        Export your data in various formats for external
+                        analysis.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <Shield className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">
+                    Security & Permissions
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Role-Based Access Control</p>
+                      <p className="text-sm text-muted-foreground">
+                        Set up user roles and permissions to control data
+                        access.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Data Encryption</p>
+                      <p className="text-sm text-muted-foreground">
+                        Understand how your data is protected with
+                        enterprise-grade encryption.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Audit Logs</p>
+                      <p className="text-sm text-muted-foreground">
+                        Track all system activities for compliance and security
+                        purposes.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <Settings className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">
+                    System Configuration
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Custom Fields</p>
+                      <p className="text-sm text-muted-foreground">
+                        Create and manage custom fields to tailor the CRM to
+                        your needs.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Workflow Automation</p>
+                      <p className="text-sm text-muted-foreground">
+                        Set up automated workflows to streamline your sales
+                        processes.
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <ChevronRight className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Email Integration</p>
+                      <p className="text-sm text-muted-foreground">
+                        Connect your email accounts for seamless communication
+                        tracking.
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <h2 className="text-2xl font-bold mb-8 flex items-center">
+            <HelpCircle className="mr-2 h-5 w-5 text-primary" />
+            Frequently Asked Questions
+          </h2>
+
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-bold mb-2">
+                  How do I reset my password?
+                </h3>
+                <p className="text-muted-foreground">
+                  Go to the login page and click on "Forgot Password". Enter
+                  your email address and follow the instructions sent to your
+                  inbox.
                 </p>
               </CardContent>
             </Card>
+
             <Card>
               <CardContent className="pt-6">
-                <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
-                  <BarChart3 className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Analytics Dashboard</h3>
+                <h3 className="text-lg font-bold mb-2">
+                  Can I import contacts from another CRM?
+                </h3>
                 <p className="text-muted-foreground">
-                  Get real-time insights into your sales performance with
-                  beautiful, interactive charts.
+                  Yes, Xalesin CRM supports importing contacts from CSV files
+                  and direct integrations with popular CRM platforms. Go to
+                  Contacts → Import to get started.
                 </p>
               </CardContent>
             </Card>
+
             <Card>
               <CardContent className="pt-6">
-                <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Enterprise Security</h3>
+                <h3 className="text-lg font-bold mb-2">
+                  How do I create custom reports?
+                </h3>
                 <p className="text-muted-foreground">
-                  Keep your customer data secure with enterprise-grade security
-                  and role-based permissions.
+                  Navigate to the Reports section, click "Create New Report",
+                  select your data source, choose metrics and dimensions, and
+                  save your configuration.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-bold mb-2">Is my data secure?</h3>
+                <p className="text-muted-foreground">
+                  Xalesin CRM uses enterprise-grade encryption for all data,
+                  both in transit and at rest. We also offer role-based access
+                  controls and detailed audit logs.
                 </p>
               </CardContent>
             </Card>
@@ -105,108 +408,68 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Trusted by Businesses Worldwide
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=faces"
-                    alt="Customer"
-                    className="w-12 h-12 rounded-full mr-4"
-                  />
-                  <div>
-                    <h4 className="font-bold">Michael Johnson</h4>
-                    <p className="text-sm text-muted-foreground">
-                      CEO, TechStart Inc.
-                    </p>
-                  </div>
-                </div>
-                <p className="italic text-muted-foreground">
-                  "Xalesin CRM has transformed how we manage our customer
-                  relationships. The intuitive interface and powerful features
-                  have helped us close 30% more deals."
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=faces"
-                    alt="Customer"
-                    className="w-12 h-12 rounded-full mr-4"
-                  />
-                  <div>
-                    <h4 className="font-bold">Sarah Williams</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Sales Director, Global Solutions
-                    </p>
-                  </div>
-                </div>
-                <p className="italic text-muted-foreground">
-                  "The analytics dashboard gives us insights we never had
-                  before. We can now make data-driven decisions that have
-                  improved our conversion rates significantly."
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=faces"
-                    alt="Customer"
-                    className="w-12 h-12 rounded-full mr-4"
-                  />
-                  <div>
-                    <h4 className="font-bold">David Chen</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Founder, Innovate LLC
-                    </p>
-                  </div>
-                </div>
-                <p className="italic text-muted-foreground">
-                  "As a small business, we needed a CRM that was easy to use but
-                  powerful. Xalesin delivered exactly what we needed without the
-                  enterprise price tag."
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      {/* Resources Section */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-2xl font-bold mb-8">Additional Resources</h2>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Ready to Transform Your Business?
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Join thousands of businesses that use Xalesin CRM to grow their
-            customer relationships and increase sales.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" variant="secondary" className="px-8">
-                Start Your Free Trial
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground px-8 hover:bg-primary-foreground hover:text-primary"
-              >
-                Schedule a Demo
-              </Button>
-            </Link>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">API Documentation</h3>
+                <p className="text-muted-foreground mb-4">
+                  Comprehensive guides for developers looking to integrate with
+                  our API.
+                </p>
+                <Link
+                  to="#"
+                  className="text-primary hover:underline flex items-center text-sm"
+                >
+                  View documentation <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">Best Practices Guide</h3>
+                <p className="text-muted-foreground mb-4">
+                  Learn industry best practices for CRM implementation and
+                  usage.
+                </p>
+                <Link
+                  to="#"
+                  className="text-primary hover:underline flex items-center text-sm"
+                >
+                  Download guide <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4 p-2 bg-primary/10 rounded-full w-fit">
+                  <HelpCircle className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">Support Center</h3>
+                <p className="text-muted-foreground mb-4">
+                  Get help from our support team or browse through common
+                  issues.
+                </p>
+                <Link
+                  to="#"
+                  className="text-primary hover:underline flex items-center text-sm"
+                >
+                  Visit support center <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -216,14 +479,14 @@ const LandingPage = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold mb-4">Product</h3>
+              <h3 className="font-bold mb-4">Documentation</h3>
               <ul className="space-y-2">
                 <li>
                   <a
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Features
+                    Getting Started
                   </a>
                 </li>
                 <li>
@@ -231,44 +494,7 @@ const LandingPage = () => {
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Integrations
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Changelog
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Resources</h3>
-              <ul className="space-y-2">
-                <li>
-                  <a
-                    href="#"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Guides
+                    User Guides
                   </a>
                 </li>
                 <li>
@@ -284,20 +510,20 @@ const LandingPage = () => {
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Community
+                    Release Notes
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold mb-4">Company</h3>
+              <h3 className="font-bold mb-4">Resources</h3>
               <ul className="space-y-2">
                 <li>
                   <a
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    About
+                    Tutorials
                   </a>
                 </li>
                 <li>
@@ -305,7 +531,7 @@ const LandingPage = () => {
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Blog
+                    Webinars
                   </a>
                 </li>
                 <li>
@@ -313,7 +539,7 @@ const LandingPage = () => {
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Careers
+                    Best Practices
                   </a>
                 </li>
                 <li>
@@ -321,7 +547,44 @@ const LandingPage = () => {
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Contact
+                    Community Forum
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold mb-4">Support</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Contact Support
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    System Status
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Feature Requests
                   </a>
                 </li>
               </ul>
@@ -350,7 +613,7 @@ const LandingPage = () => {
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Cookie Policy
+                    Security
                   </a>
                 </li>
                 <li>
@@ -358,7 +621,7 @@ const LandingPage = () => {
                     href="#"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    GDPR
+                    Compliance
                   </a>
                 </li>
               </ul>

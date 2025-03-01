@@ -1,24 +1,77 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { LogIn } from "lucide-react";
+import { LogIn, Loader2, AlertCircle } from "lucide-react";
+import { authApi } from "@/lib/api";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface LoginPageProps {
-  onLogin?: (email: string, password: string) => void;
+  onLogin?: (email: string, password: string) => string | void;
 }
 
-const LoginPage = ({
-  onLogin = (email, password) => console.log("login", { email, password }),
-}: LoginPageProps) => {
+const LoginPage = ({ onLogin }: LoginPageProps) => {
+  const navigate = useNavigate();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(email, password);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      // Authenticate with Supabase
+      const { user, profile, error } = await authApi.signIn(email, password);
+
+      if (error) {
+        throw new Error(error.message || "Invalid email or password");
+      }
+
+      if (!user) {
+        throw new Error("No user returned from authentication");
+      }
+
+      console.log("Login successful", user, profile);
+
+      // Determine redirect path based on onboarding status
+      let redirectPath = "/dashboard";
+
+      // Check if user has completed onboarding
+      if (profile && profile.onboarding_complete === false) {
+        console.log(
+          "User has not completed onboarding, redirecting to onboarding flow",
+        );
+        redirectPath = "/onboarding/step1";
+      } else {
+        console.log("User has completed onboarding, redirecting to dashboard");
+        // Call the onLogin prop if provided
+        if (onLogin) {
+          const customRedirect = onLogin(email, password);
+          if (typeof customRedirect === "string") {
+            redirectPath = customRedirect;
+          }
+        }
+      }
+
+      // Navigate to appropriate path
+      navigate(redirectPath);
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err instanceof Error ? err.message : "Failed to sign in");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -28,8 +81,18 @@ const LoginPage = ({
           <CardTitle className="text-2xl font-bold text-center">
             Login
           </CardTitle>
+          <CardDescription className="text-center">
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -40,6 +103,7 @@ const LoginPage = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -51,6 +115,7 @@ const LoginPage = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -67,8 +132,17 @@ const LoginPage = ({
                 Create account
               </Link>
             </div>
-            <Button type="submit" className="w-full">
-              <LogIn className="mr-2 h-4 w-4" /> Sign In
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing
+                  In...
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-4 w-4" /> Sign In
+                </>
+              )}
             </Button>
           </form>
         </CardContent>

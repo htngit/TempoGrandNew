@@ -1,33 +1,102 @@
 import { supabase } from "./supabase";
 import {
   Tenant,
-  User,
+  Profile,
   Contact,
   Lead,
   Activity,
   Setting,
   TenantInsert,
-  UserInsert,
+  ProfileInsert,
   ContactInsert,
   LeadInsert,
   ActivityInsert,
   SettingInsert,
   TenantUpdate,
-  UserUpdate,
+  ProfileUpdate,
   ContactUpdate,
   LeadUpdate,
   ActivityUpdate,
   SettingUpdate,
 } from "./database.types";
 
+// Auth API
+export const authApi = {
+  // Sign up a new user
+  signUp: async (
+    email: string,
+    password: string,
+  ): Promise<{ user: any; error: any }> => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    return { user: data.user, error };
+  },
+
+  // Sign in a user
+  signIn: async (
+    email: string,
+    password: string,
+  ): Promise<{ user: any; error: any }> => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    return { user: data.user, error };
+  },
+
+  // Sign out the current user
+  signOut: async (): Promise<{ error: any }> => {
+    const { error } = await supabase.auth.signOut();
+    return { error };
+  },
+
+  // Get the current user
+  getCurrentUser: async (): Promise<{ user: any; error: any }> => {
+    const { data, error } = await supabase.auth.getUser();
+    return { user: data.user, error };
+  },
+
+  // Reset password
+  resetPassword: async (email: string): Promise<{ error: any }> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    return { error };
+  },
+
+  // Update password
+  updatePassword: async (password: string): Promise<{ error: any }> => {
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+    return { error };
+  },
+};
+
 // Tenant API
 export const tenantApi = {
   // Get current tenant
   getCurrent: async (): Promise<Tenant | null> => {
-    const { data: user, error: userError } = await supabase.auth.getUser();
-    if (userError || !user.user) return null;
+    const { user, error: userError } = await authApi.getCurrentUser();
+    if (userError || !user) return null;
 
-    const { data, error } = await supabase.from("tenants").select("*").single();
+    // Get the profile to find the tenant_id
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile) return null;
+
+    // Get the tenant
+    const { data, error } = await supabase
+      .from("tenants")
+      .select("*")
+      .eq("id", profile.tenant_id)
+      .single();
 
     if (error) return null;
     return data;
@@ -59,27 +128,27 @@ export const tenantApi = {
   },
 };
 
-// User API
-export const userApi = {
-  // Get current user with profile
-  getCurrent: async (): Promise<User | null> => {
-    const { data: authUser, error: authError } = await supabase.auth.getUser();
-    if (authError || !authUser.user) return null;
+// Profile API
+export const profileApi = {
+  // Get current user profile
+  getCurrent: async (): Promise<Profile | null> => {
+    const { user, error: authError } = await authApi.getCurrentUser();
+    if (authError || !user) return null;
 
     const { data, error } = await supabase
-      .from("users")
+      .from("profiles")
       .select("*")
-      .eq("id", authUser.user.id)
+      .eq("id", user.id)
       .single();
 
     if (error) return null;
     return data;
   },
 
-  // Get all users in tenant
-  getAll: async (): Promise<User[]> => {
+  // Get all profiles in tenant
+  getAll: async (): Promise<Profile[]> => {
     const { data, error } = await supabase
-      .from("users")
+      .from("profiles")
       .select("*")
       .order("first_name", { ascending: true });
 
@@ -87,22 +156,13 @@ export const userApi = {
     return data || [];
   },
 
-  // Create user
-  create: async (user: UserInsert): Promise<User | null> => {
+  // Update profile
+  update: async (
+    id: string,
+    updates: ProfileUpdate,
+  ): Promise<Profile | null> => {
     const { data, error } = await supabase
-      .from("users")
-      .insert(user)
-      .select()
-      .single();
-
-    if (error) return null;
-    return data;
-  },
-
-  // Update user
-  update: async (id: string, updates: UserUpdate): Promise<User | null> => {
-    const { data, error } = await supabase
-      .from("users")
+      .from("profiles")
       .update(updates)
       .eq("id", id)
       .select()
@@ -112,11 +172,16 @@ export const userApi = {
     return data;
   },
 
-  // Delete user
-  delete: async (id: string): Promise<boolean> => {
-    const { error } = await supabase.from("users").delete().eq("id", id);
+  // Get profile by user ID
+  getById: async (id: string): Promise<Profile | null> => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    return !error;
+    if (error) return null;
+    return data;
   },
 };
 

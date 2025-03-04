@@ -173,14 +173,25 @@ export const profileApi = {
     id: string,
     updates: ProfileUpdate,
   ): Promise<Profile | null> => {
+    // Handle avatar_url and avatar_key separately if they exist
+    const profileUpdates = { ...updates };
+
+    // If avatar_url is provided in the standard format, map it to avatar_url_s3
+    if (profileUpdates.avatar_url) {
+      profileUpdates.avatar_url_s3 = profileUpdates.avatar_url;
+    }
+
     const { data, error } = await supabase
       .from("profiles")
-      .update(updates)
+      .update(profileUpdates)
       .eq("id", id)
       .select()
       .single();
 
-    if (error) return null;
+    if (error) {
+      console.error("Error updating profile:", error);
+      return null;
+    }
     return data;
   },
 

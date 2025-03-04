@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import UserProfileDropdown from "./UserProfileDropdown";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -19,6 +20,9 @@ interface SidebarProps {
   onThemeToggle?: () => void;
   currentPath?: string;
   onNavigate?: (path: string) => void;
+  onLogout?: () => void;
+  onSettings?: () => void;
+  onProfile?: () => void;
 }
 
 const Sidebar = ({
@@ -26,8 +30,21 @@ const Sidebar = ({
   isDarkMode = false,
   onThemeToggle = () => console.log("theme toggle clicked"),
   currentPath = "/dashboard",
-  onNavigate = (path) => console.log(`navigate to ${path}`),
+  onNavigate,
+  onLogout = () => console.log("logout clicked"),
+  onSettings = () => console.log("settings clicked"),
+  onProfile = () => console.log("profile clicked"),
 }: SidebarProps) => {
+  const navigate = useNavigate();
+
+  const handleNavigate = (path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      navigate(path);
+    }
+  };
+
   const navItems = [
     {
       icon: LayoutDashboard,
@@ -37,17 +54,17 @@ const Sidebar = ({
     {
       icon: Users,
       label: "Leads",
-      path: "/leads",
+      path: "/dashboard/leads",
     },
     {
       icon: Contact,
       label: "Contacts",
-      path: "/contacts",
+      path: "/dashboard/contacts",
     },
     {
       icon: Settings,
       label: "Settings",
-      path: "/settings",
+      path: "/dashboard/settings",
     },
   ];
 
@@ -72,7 +89,7 @@ const Sidebar = ({
                 key={item.path}
                 variant={isActive ? "secondary" : "ghost"}
                 className="w-full justify-start gap-2"
-                onClick={() => onNavigate(item.path)}
+                onClick={() => handleNavigate(item.path)}
               >
                 <Icon className="h-5 w-5" />
                 {item.label}
@@ -101,7 +118,11 @@ const Sidebar = ({
           )}
         </Button>
         <Separator className="my-4" />
-        <UserProfileDropdown />
+        <UserProfileDropdown
+          onLogout={onLogout}
+          onSettings={onSettings}
+          onProfile={onProfile}
+        />
       </div>
     </div>
   );

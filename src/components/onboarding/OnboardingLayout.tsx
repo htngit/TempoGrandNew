@@ -1,9 +1,13 @@
-import React from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import TenantSetup from "./TenantSetup";
+import CompanyDetails from "./CompanyDetails";
+import UserDetails from "./UserDetails";
+import Preferences from "./Preferences";
 
 interface OnboardingLayoutProps {
   currentStep?: number;
@@ -29,7 +33,8 @@ const OnboardingLayout = ({
     if (isLastStep) {
       // Mark onboarding as complete in the user's profile
       try {
-        const { profileApi } = await import("@/lib/api");
+        const { profileApi, authApi } = await import("@/lib/api");
+        const { user } = await authApi.getCurrentUser();
         const currentProfile = await profileApi.getCurrent();
 
         if (currentProfile) {
@@ -37,8 +42,17 @@ const OnboardingLayout = ({
             onboarding_complete: true,
           });
           console.log("Onboarding marked as complete");
+        } else if (user) {
+          // If no profile exists but user exists, create a profile
+          console.log("Creating new profile for user", user.id);
+          // You may need to adjust this based on your profile structure
+          await profileApi.update(user.id, {
+            onboarding_complete: true,
+            role: "member", // Default role
+            tenant_id: user.id, // Temporary tenant ID, adjust as needed
+          });
         } else {
-          console.error("Could not find current user profile");
+          console.error("Could not find current user");
         }
       } catch (error) {
         console.error("Error updating onboarding status:", error);
@@ -59,6 +73,22 @@ const OnboardingLayout = ({
     }
   };
 
+  // Render the appropriate step component based on currentStep
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return <TenantSetup />;
+      case 2:
+        return <CompanyDetails />;
+      case 3:
+        return <UserDetails />;
+      case 4:
+        return <Preferences />;
+      default:
+        return <TenantSetup />;
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-3xl p-6">
@@ -72,9 +102,7 @@ const OnboardingLayout = ({
           <Progress value={progress} className="h-2" />
         </div>
 
-        <div className="py-4">
-          <Outlet />
-        </div>
+        <div className="py-4">{renderStepContent()}</div>
 
         <div className="flex justify-between mt-8">
           <Button

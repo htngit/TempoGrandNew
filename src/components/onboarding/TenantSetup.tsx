@@ -9,19 +9,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Building2 } from "lucide-react";
+import { useOnboardingContext } from "./OnboardingLayout";
 
 interface TenantSetupProps {
   onDataChange?: (data: any) => void;
 }
 
 const TenantSetup = ({ onDataChange = () => {} }: TenantSetupProps) => {
-  const [tenantName, setTenantName] = React.useState("");
-  const [industry, setIndustry] = React.useState("");
-  const [size, setSize] = React.useState("");
+  const { tenantData, updateTenantData } = useOnboardingContext();
 
+  const [tenantName, setTenantName] = React.useState(tenantData.name || "");
+  const [industry, setIndustry] = React.useState(tenantData.industry || "");
+  const [size, setSize] = React.useState(tenantData.size || "");
+
+  // Handle form changes manually instead of in useEffect
+  const handleChange = React.useCallback(() => {
+    const data = { name: tenantName, industry, size };
+    updateTenantData(data);
+    onDataChange(data);
+  }, [tenantName, industry, size, onDataChange, updateTenantData]);
+
+  // Use a debounced version of handleChange to avoid too many updates
   React.useEffect(() => {
-    onDataChange({ tenantName, industry, size });
-  }, [tenantName, industry, size, onDataChange]);
+    const timer = setTimeout(() => {
+      handleChange();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [handleChange]);
 
   return (
     <div className="space-y-6">

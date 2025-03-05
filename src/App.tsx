@@ -21,21 +21,15 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
 
-  // Simulate login process
+  // Login process is now handled by the LoginPage component directly
+  // This function is kept for backward compatibility
   const handleLogin = (email: string, password: string) => {
-    // In a real app, you would validate credentials with your backend
     console.log("Login attempt with", { email, password });
     setIsAuthenticated(true);
 
-    // Check if this is the user's first login
-    // This would normally be determined by your backend
-    if (email === "new@example.com") {
-      setIsFirstLogin(true);
-      return "/onboarding/step1";
-    } else {
-      setIsFirstLogin(false);
-      return "/dashboard";
-    }
+    // The actual redirect logic is now in the LoginPage component
+    // based on the user's onboarding_complete flag in their profile
+    return;
   };
 
   return (

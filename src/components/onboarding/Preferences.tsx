@@ -1,22 +1,56 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Settings } from "lucide-react";
+import { useOnboardingContext } from "./OnboardingLayout";
 
 interface PreferencesProps {
   onDataChange?: (data: any) => void;
 }
 
 const Preferences = ({ onDataChange = () => {} }: PreferencesProps) => {
-  const [emailNotifications, setEmailNotifications] = React.useState(true);
-  const [theme, setTheme] = React.useState("light");
-  const [dataSharing, setDataSharing] = React.useState(false);
-  const [autoSave, setAutoSave] = React.useState(true);
+  const { preferencesData, updatePreferencesData } = useOnboardingContext();
 
+  const [theme, setTheme] = React.useState(preferencesData.theme || "light");
+  const [emailNotifications, setEmailNotifications] = React.useState(
+    preferencesData.emailNotifications || false,
+  );
+  const [dataSharing, setDataSharing] = React.useState(
+    preferencesData.dataSharing || false,
+  );
+  const [autoSave, setAutoSave] = React.useState(
+    preferencesData.autoSave || true,
+  );
+
+  // Handle form changes manually instead of in useEffect
+  const handleChange = React.useCallback(() => {
+    const data = { theme, emailNotifications, dataSharing, autoSave };
+    updatePreferencesData(data);
+    onDataChange(data);
+  }, [
+    theme,
+    emailNotifications,
+    dataSharing,
+    autoSave,
+    onDataChange,
+    updatePreferencesData,
+  ]);
+
+  // Use a debounced version of handleChange to avoid too many updates
   React.useEffect(() => {
-    onDataChange({ emailNotifications, theme, dataSharing, autoSave });
-  }, [emailNotifications, theme, dataSharing, autoSave, onDataChange]);
+    const timer = setTimeout(() => {
+      handleChange();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [handleChange]);
 
   return (
     <div className="space-y-6">
@@ -25,75 +59,72 @@ const Preferences = ({ onDataChange = () => {} }: PreferencesProps) => {
           <Settings className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">Your Preferences</h2>
-          <p className="text-muted-foreground">Customize your experience</p>
+          <h2 className="text-2xl font-bold">Preferences</h2>
+          <p className="text-muted-foreground">Customize your CRM experience</p>
         </div>
       </div>
 
       <div className="space-y-6 mt-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Notifications</h3>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="email-notifications" className="flex-1">
+        <div className="space-y-2">
+          <Label htmlFor="theme">Theme</Label>
+          <Select value={theme} onValueChange={setTheme}>
+            <SelectTrigger id="theme">
+              <SelectValue placeholder="Select theme" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <Label htmlFor="email-notifications" className="block mb-1">
               Email Notifications
-              <span className="block text-sm text-muted-foreground">
-                Receive updates about your account activity
-              </span>
             </Label>
-            <Switch
-              id="email-notifications"
-              checked={emailNotifications}
-              onCheckedChange={setEmailNotifications}
-            />
+            <p className="text-sm text-muted-foreground">
+              Receive email notifications for important updates
+            </p>
           </div>
+          <Switch
+            id="email-notifications"
+            checked={emailNotifications}
+            onCheckedChange={setEmailNotifications}
+          />
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Appearance</h3>
-          <RadioGroup value={theme} onValueChange={setTheme}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="light" id="light" />
-              <Label htmlFor="light">Light Mode</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="dark" id="dark" />
-              <Label htmlFor="dark">Dark Mode</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="system" id="system" />
-              <Label htmlFor="system">System Default</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Privacy & Data</h3>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="data-sharing" className="flex-1">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label htmlFor="data-sharing" className="block mb-1">
               Data Sharing
-              <span className="block text-sm text-muted-foreground">
-                Allow anonymous usage data to improve our service
-              </span>
             </Label>
-            <Switch
-              id="data-sharing"
-              checked={dataSharing}
-              onCheckedChange={setDataSharing}
-            />
+            <p className="text-sm text-muted-foreground">
+              Share anonymous usage data to help improve the product
+            </p>
           </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="auto-save" className="flex-1">
+          <Switch
+            id="data-sharing"
+            checked={dataSharing}
+            onCheckedChange={setDataSharing}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <Label htmlFor="auto-save" className="block mb-1">
               Auto-Save
-              <span className="block text-sm text-muted-foreground">
-                Automatically save your work as you go
-              </span>
             </Label>
-            <Switch
-              id="auto-save"
-              checked={autoSave}
-              onCheckedChange={setAutoSave}
-            />
+            <p className="text-sm text-muted-foreground">
+              Automatically save changes as you work
+            </p>
           </div>
+          <Switch
+            id="auto-save"
+            checked={autoSave}
+            onCheckedChange={setAutoSave}
+          />
         </div>
       </div>
     </div>

@@ -3,20 +3,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Building } from "lucide-react";
+import { useOnboardingContext } from "./OnboardingLayout";
 
 interface CompanyDetailsProps {
   onDataChange?: (data: any) => void;
 }
 
 const CompanyDetails = ({ onDataChange = () => {} }: CompanyDetailsProps) => {
-  const [address, setAddress] = React.useState("");
-  const [website, setWebsite] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [description, setDescription] = React.useState("");
+  const { companyData, updateCompanyData } = useOnboardingContext();
 
+  const [address, setAddress] = React.useState(companyData.address || "");
+  const [website, setWebsite] = React.useState(companyData.website || "");
+  const [phone, setPhone] = React.useState(companyData.phone || "");
+  const [description, setDescription] = React.useState(
+    companyData.description || "",
+  );
+
+  // Handle form changes manually instead of in useEffect
+  const handleChange = React.useCallback(() => {
+    const data = { address, website, phone, description };
+    updateCompanyData(data);
+    onDataChange(data);
+  }, [address, website, phone, description, onDataChange, updateCompanyData]);
+
+  // Use a debounced version of handleChange to avoid too many updates
   React.useEffect(() => {
-    onDataChange({ address, website, phone, description });
-  }, [address, website, phone, description, onDataChange]);
+    const timer = setTimeout(() => {
+      handleChange();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [handleChange]);
 
   return (
     <div className="space-y-6">

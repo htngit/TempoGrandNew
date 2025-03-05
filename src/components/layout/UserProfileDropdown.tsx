@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -11,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings, User } from "lucide-react";
+import { authApi } from "@/lib/api";
 
 interface UserProfileDropdownProps {
   user?: {
@@ -29,10 +31,37 @@ const UserProfileDropdown = ({
     email: "john@example.com",
     avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
   },
-  onLogout = () => console.log("logout clicked"),
+  onLogout,
   onSettings = () => console.log("settings clicked"),
   onProfile = () => console.log("profile clicked"),
 }: UserProfileDropdownProps) => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      // Call the custom onLogout if provided
+      if (onLogout) {
+        onLogout();
+      }
+
+      // Sign out using the auth API
+      const { error } = await authApi.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        throw error;
+      }
+
+      console.log("User logged out successfully");
+
+      // Redirect to login page
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout error:", err);
+      // Still redirect to login page even if there's an error
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="bg-background p-2 rounded-lg">
       <DropdownMenu>
@@ -72,7 +101,7 @@ const UserProfileDropdown = ({
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onLogout} className="text-red-600">
+          <DropdownMenuItem onClick={handleLogout} className="text-red-600">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>

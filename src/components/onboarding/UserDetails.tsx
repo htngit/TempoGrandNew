@@ -1,32 +1,36 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { User, Upload } from "lucide-react";
+import { User } from "lucide-react";
+import { useOnboardingContext } from "./OnboardingLayout";
 
 interface UserDetailsProps {
   onDataChange?: (data: any) => void;
 }
 
 const UserDetails = ({ onDataChange = () => {} }: UserDetailsProps) => {
-  const [name, setName] = React.useState("");
-  const [jobTitle, setJobTitle] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  const [avatarUrl, setAvatarUrl] = React.useState("");
+  const { userData, updateUserData } = useOnboardingContext();
 
-  React.useEffect(() => {
-    onDataChange({ name, jobTitle, phone, avatarUrl });
-  }, [name, jobTitle, phone, avatarUrl, onDataChange]);
+  const [name, setName] = React.useState(userData.name || "");
+  const [jobTitle, setJobTitle] = React.useState(userData.jobTitle || "");
+  const [phone, setPhone] = React.useState(userData.phone || "");
+  const [avatarUrl, setAvatarUrl] = React.useState(userData.avatarUrl || "");
 
-  // Generate avatar URL based on name
+  // Handle form changes manually instead of in useEffect
+  const handleChange = React.useCallback(() => {
+    const data = { name, jobTitle, phone, avatarUrl };
+    updateUserData(data);
+    onDataChange(data);
+  }, [name, jobTitle, phone, avatarUrl, onDataChange, updateUserData]);
+
+  // Use a debounced version of handleChange to avoid too many updates
   React.useEffect(() => {
-    if (name) {
-      setAvatarUrl(
-        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
-      );
-    }
-  }, [name]);
+    const timer = setTimeout(() => {
+      handleChange();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [handleChange]);
 
   return (
     <div className="space-y-6">
@@ -35,28 +39,12 @@ const UserDetails = ({ onDataChange = () => {} }: UserDetailsProps) => {
           <User className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">Your Profile</h2>
-          <p className="text-muted-foreground">Tell us about yourself</p>
+          <h2 className="text-2xl font-bold">Your Details</h2>
+          <p className="text-muted-foreground">Tell us more about yourself</p>
         </div>
       </div>
 
-      <div className="flex justify-center my-6">
-        <div className="relative">
-          <Avatar className="h-24 w-24">
-            <AvatarImage src={avatarUrl} alt="Profile" />
-            <AvatarFallback>{name ? name.charAt(0) : "U"}</AvatarFallback>
-          </Avatar>
-          <Button
-            size="sm"
-            variant="outline"
-            className="absolute bottom-0 right-0 rounded-full h-8 w-8 p-0"
-          >
-            <Upload className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="space-y-4">
+      <div className="space-y-4 mt-6">
         <div className="space-y-2">
           <Label htmlFor="name">Full Name</Label>
           <Input
@@ -82,10 +70,32 @@ const UserDetails = ({ onDataChange = () => {} }: UserDetailsProps) => {
           <Input
             id="phone"
             type="tel"
-            placeholder="+1 (555) 000-0000"
+            placeholder="Enter your phone number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="avatar-url">Profile Picture URL</Label>
+          <Input
+            id="avatar-url"
+            placeholder="Enter URL for your profile picture"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+          />
+          {avatarUrl && (
+            <div className="mt-2 flex justify-center">
+              <img
+                src={avatarUrl}
+                alt="Profile Preview"
+                className="h-20 w-20 rounded-full object-cover border"
+                onError={(e) => {
+                  e.currentTarget.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

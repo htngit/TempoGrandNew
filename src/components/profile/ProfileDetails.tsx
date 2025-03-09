@@ -28,6 +28,7 @@ const ProfileDetails = () => {
     location: "",
     avatarUrl: "",
     email: "",
+    phone: "", // Added phone field
   });
 
   useEffect(() => {
@@ -36,13 +37,53 @@ const ProfileDetails = () => {
         setIsLoading(true);
         setError(null);
 
+        // Get user data for email first
+        const { user, error: userError } = await authApi.getCurrentUser();
+        if (userError || !user) {
+          throw new Error("Could not fetch user data");
+        }
+
+        console.log("User ID from auth:", user.id);
+
+        // Get profile data using the user ID
         const currentProfile = await profileApi.getCurrent();
         if (!currentProfile) {
           throw new Error("Could not fetch profile data");
         }
 
-        // Get user data for email
-        const { user } = await authApi.getCurrentUser();
+        // Verify the profile ID matches the user ID
+        if (currentProfile.id !== user.id) {
+          console.error("Profile ID doesn't match user ID", {
+            profileId: currentProfile.id,
+            userId: user.id,
+          });
+        }
+
+        // User data already fetched above
+
+        console.log("Current profile data:", currentProfile);
+
+        // Determine the avatar URL with proper fallbacks
+        let avatarUrl = null;
+        if (currentProfile.avatar_url && currentProfile.avatar_url !== "null") {
+          avatarUrl = currentProfile.avatar_url;
+          console.log("Using avatar_url:", avatarUrl);
+        } else if (
+          currentProfile.avatar_url_s3 &&
+          currentProfile.avatar_url_s3 !== "null"
+        ) {
+          avatarUrl = currentProfile.avatar_url_s3;
+          console.log("Using avatar_url_s3:", avatarUrl);
+        } else {
+          // Use dicebear as fallback with the user's name as seed
+          const nameSeed =
+            currentProfile.first_name || user?.email?.split("@")[0] || "user";
+          avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameSeed}`;
+          console.log("Using dicebear fallback:", avatarUrl);
+        }
+
+        // Log the profile ID to verify it's a valid UUID
+        console.log("Profile ID:", currentProfile.id);
 
         setProfile({
           id: currentProfile.id,
@@ -52,10 +93,9 @@ const ProfileDetails = () => {
           bio: currentProfile.bio || "",
           birthDate: currentProfile.birth_date || "",
           location: currentProfile.location || "",
-          avatarUrl:
-            currentProfile.avatar_url ||
-            `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentProfile.first_name}`,
+          avatarUrl: avatarUrl,
           email: user?.email || "",
+          phone: currentProfile.phone || "", // Added phone field
         });
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -101,6 +141,8 @@ const ProfileDetails = () => {
       // Update the profile in the database immediately
       await profileApi.update(profile.id, {
         avatar_url: publicUrl,
+        avatar_url_s3: publicUrl, // Update both avatar fields for consistency
+        avatar_key: filePath, // Store the storage key for future reference
       });
 
       setSuccess(true);
@@ -125,6 +167,7 @@ const ProfileDetails = () => {
         bio: profile.bio,
         birth_date: profile.birthDate,
         location: profile.location,
+        phone: profile.phone, // Add phone field to update
       });
 
       if (!updated) {
@@ -260,6 +303,18 @@ const ProfileDetails = () => {
               <p className="text-xs text-muted-foreground">
                 Email cannot be changed
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                value={profile.phone}
+                onChange={(e) =>
+                  setProfile({ ...profile, phone: e.target.value })
+                }
+                disabled={!isEditing || isSaving}
+              />
             </div>
 
             <div className="space-y-2">

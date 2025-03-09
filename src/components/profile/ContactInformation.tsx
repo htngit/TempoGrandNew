@@ -30,10 +30,12 @@ const ContactInformation = () => {
         setError(null);
 
         // Get user data for email
-        const { user } = await authApi.getCurrentUser();
-        if (!user) {
+        const { user, error: userError } = await authApi.getCurrentUser();
+        if (userError || !user) {
           throw new Error("Could not fetch user data");
         }
+
+        console.log("User ID from auth (contact info):", user.id);
 
         // Get profile data for other contact info
         const currentProfile = await profileApi.getCurrent();
@@ -41,7 +43,17 @@ const ContactInformation = () => {
           throw new Error("Could not fetch profile data");
         }
 
+        // Verify the profile ID matches the user ID
+        if (currentProfile.id !== user.id) {
+          console.error("Profile ID doesn't match user ID in contact info", {
+            profileId: currentProfile.id,
+            userId: user.id,
+          });
+        }
+
         setProfileId(currentProfile.id);
+        console.log("Current profile data for contact info:", currentProfile);
+
         setContactInfo({
           email: user.email || "",
           phone: currentProfile.phone || "",

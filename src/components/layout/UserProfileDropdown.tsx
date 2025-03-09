@@ -46,24 +46,52 @@ const UserProfileDropdown = ({
         setIsLoading(true);
 
         // Get user data for email
-        const { user: authUser } = await authApi.getCurrentUser();
-        if (!authUser) {
+        const { user: authUser, error: userError } =
+          await authApi.getCurrentUser();
+        if (userError || !authUser) {
           throw new Error("User not found or not logged in");
         }
+
+        console.log("User ID from auth (dropdown):", authUser.id);
 
         // Get profile data for name and avatar
         const profile = await profileApi.getCurrent();
 
+        // Verify profile data if available
+        if (profile && profile.id !== authUser.id) {
+          console.error("Profile ID doesn't match user ID in dropdown", {
+            profileId: profile.id,
+            userId: authUser.id,
+          });
+        }
+
+        // Get the user's full name from profile data
         const fullName = profile
           ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim()
           : authUser.email?.split("@")[0] || "User";
 
+        console.log("Profile data for dropdown:", profile);
+
+        // Determine the avatar URL with proper fallbacks
+        let avatarUrl = null;
+        if (profile?.avatar_url && profile.avatar_url !== "null") {
+          avatarUrl = profile.avatar_url;
+          console.log("Dropdown using avatar_url:", avatarUrl);
+        } else if (profile?.avatar_url_s3 && profile.avatar_url_s3 !== "null") {
+          avatarUrl = profile.avatar_url_s3;
+          console.log("Dropdown using avatar_url_s3:", avatarUrl);
+        } else {
+          // Use dicebear as fallback with the user's name as seed
+          const nameSeed =
+            profile?.first_name || authUser.email?.split("@")[0] || "user";
+          avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameSeed}`;
+          console.log("Dropdown using dicebear fallback:", avatarUrl);
+        }
+
         setUser({
           name: fullName,
           email: authUser.email || "",
-          avatarUrl:
-            profile?.avatar_url ||
-            `https://api.dicebear.com/7.x/avataaars/svg?seed=${fullName}`,
+          avatarUrl: avatarUrl,
         });
       } catch (error) {
         console.error("Error fetching user data:", error);

@@ -162,17 +162,33 @@ export const tenantApi = {
 export const profileApi = {
   // Get current user profile
   getCurrent: async (): Promise<Profile | null> => {
-    const { user, error: authError } = await authApi.getCurrentUser();
-    if (authError || !user) return null;
+    try {
+      const { user, error: authError } = await authApi.getCurrentUser();
+      if (authError || !user) {
+        console.error("Auth error or no user found:", authError);
+        return null;
+      }
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+      console.log("Current user ID:", user.id);
 
-    if (error) return null;
-    return data;
+      // Make sure we're using the UUID from auth.user
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return null;
+      }
+
+      console.log("Profile data fetched:", data);
+      return data;
+    } catch (err) {
+      console.error("Exception in getCurrent:", err);
+      return null;
+    }
   },
 
   // Get all profiles in tenant

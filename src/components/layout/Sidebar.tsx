@@ -9,14 +9,15 @@ import {
   Users,
   Contact,
   Settings,
-  Moon,
-  Sun,
+  Package,
+  FileText,
+  Calendar,
+  Mail,
 } from "lucide-react";
 
 interface SidebarProps {
   className?: string;
   isDarkMode?: boolean;
-  onThemeToggle?: () => void;
   currentPath?: string;
   onNavigate?: (path: string) => void;
 }
@@ -24,7 +25,6 @@ interface SidebarProps {
 const Sidebar = ({
   className,
   isDarkMode = false,
-  onThemeToggle = () => console.log("theme toggle clicked"),
   currentPath = "/dashboard",
   onNavigate = (path) => console.log(`navigate to ${path}`),
 }: SidebarProps) => {
@@ -37,24 +37,44 @@ const Sidebar = ({
     {
       icon: Users,
       label: "Leads",
-      path: "/leads",
+      path: "/dashboard/leads",
     },
     {
       icon: Contact,
       label: "Contacts",
-      path: "/contacts",
+      path: "/dashboard/contacts",
+    },
+    {
+      icon: Package,
+      label: "Products",
+      path: "/dashboard/products",
+    },
+    {
+      icon: FileText,
+      label: "Quotes",
+      path: "/dashboard/quotes",
+    },
+    {
+      icon: Calendar,
+      label: "Activities",
+      path: "/dashboard/activities",
+    },
+    {
+      icon: Mail,
+      label: "Mail",
+      path: "/dashboard/mail",
     },
     {
       icon: Settings,
       label: "Settings",
-      path: "/settings",
+      path: "/dashboard/settings",
     },
   ];
 
   return (
     <div
       className={cn(
-        "flex h-screen w-[280px] flex-col border-r bg-background",
+        "fixed top-0 left-0 flex h-screen w-[280px] flex-col border-r bg-background z-10",
         className,
       )}
     >
@@ -82,25 +102,7 @@ const Sidebar = ({
         </nav>
       </ScrollArea>
       <div className="p-4 mt-auto">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="mb-4 w-full justify-start gap-2"
-          onClick={onThemeToggle}
-        >
-          {isDarkMode ? (
-            <>
-              <Sun className="h-5 w-5" />
-              <span>Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon className="h-5 w-5" />
-              <span>Dark Mode</span>
-            </>
-          )}
-        </Button>
-        <Separator className="my-4" />
+        <Separator className="mb-4" />
         <UserProfileDropdown />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,8 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, User, Loader2 } from "lucide-react";
 import { authApi } from "@/lib/api";
+import { profileApi } from "@/lib/api";
 
 interface UserProfileDropdownProps {
   user?: {
@@ -26,16 +27,57 @@ interface UserProfileDropdownProps {
 }
 
 const UserProfileDropdown = ({
-  user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-  },
+  user: initialUser,
   onLogout,
   onSettings = () => console.log("settings clicked"),
   onProfile = () => console.log("profile clicked"),
 }: UserProfileDropdownProps) => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+    avatarUrl: "",
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Get user data for email
+        const { user: authUser } = await authApi.getCurrentUser();
+        if (!authUser) {
+          throw new Error("User not found or not logged in");
+        }
+
+        // Get profile data for name and avatar
+        const profile = await profileApi.getCurrent();
+
+        const fullName = profile
+          ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim()
+          : authUser.email?.split("@")[0] || "User";
+
+        setUser({
+          name: fullName,
+          email: authUser.email || "",
+          avatarUrl:
+            profile?.avatar_url ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${fullName}`,
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // Fallback to initial user if provided, or default values
+        if (initialUser) {
+          setUser(initialUser);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [initialUser]);
 
   const handleLogout = async () => {
     try {
@@ -61,6 +103,25 @@ const UserProfileDropdown = ({
       navigate("/login");
     }
   };
+
+  const handleSettingsClick = () => {
+    navigate("/dashboard/settings");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-background p-2 rounded-lg">
+        <Button
+          variant="ghost"
+          className="relative h-10 w-full flex items-center justify-start gap-2 px-2"
+          disabled
+        >
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="ml-2">Loading...</span>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background p-2 rounded-lg">
@@ -91,11 +152,11 @@ const UserProfileDropdown = ({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={onProfile}>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onSettings}>
+            <DropdownMenuItem onClick={handleSettingsClick}>
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>

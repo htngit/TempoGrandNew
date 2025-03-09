@@ -8,6 +8,11 @@ import DashboardHome from "./components/dashboard/DashboardHome";
 import ContactsPage from "./components/contacts/ContactsPage";
 import SettingsPage from "./components/settings/SettingsPage";
 import LeadManagementTable from "./components/leads/LeadManagementTable";
+import ProductsPage from "./components/products/ProductsPage";
+import QuotesPage from "./components/quotes/QuotesPage";
+import ActivitiesPage from "./components/activities/ActivitiesPage";
+import MailPage from "./components/mail/MailPage";
+import ProfilePage from "./components/profile/ProfilePage";
 import OnboardingLayout from "./components/onboarding/OnboardingLayout";
 import TenantSetup from "./components/onboarding/TenantSetup";
 import CompanyDetails from "./components/onboarding/CompanyDetails";
@@ -53,11 +58,32 @@ function App() {
           </Route>
 
           {/* Main Dashboard */}
-          <Route path="/dashboard" element={<Home />}>
+          <Route
+            path="/dashboard"
+            element={
+              <Home
+                isDarkMode={isAuthenticated}
+                onThemeToggle={() => setIsAuthenticated(!isAuthenticated)}
+              />
+            }
+          >
             <Route index element={<DashboardHome />} />
             <Route path="leads" element={<LeadManagementTable />} />
             <Route path="contacts" element={<ContactsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="quotes" element={<QuotesPage />} />
+            <Route path="activities" element={<ActivitiesPage />} />
+            <Route path="mail" element={<MailPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="settings"
+              element={
+                <SettingsPage
+                  isDarkMode={isAuthenticated}
+                  onThemeToggle={() => setIsAuthenticated(!isAuthenticated)}
+                />
+              }
+            />
           </Route>
 
           {/* Tempo routes for storyboards */}

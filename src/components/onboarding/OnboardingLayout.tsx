@@ -97,10 +97,20 @@ const OnboardingLayout = ({
         }
 
         // 1. Update tenant information
-        await tenantApi.update(currentTenant.id, {
-          ...tenantData,
-          ...companyData, // Add company details to tenant
+        console.log("Current tenant:", currentTenant);
+        const updatedTenant = await tenantApi.update(currentTenant.id, {
+          name: tenantData.name || currentTenant.name,
+          industry: tenantData.industry || currentTenant.industry,
+          website: companyData.website,
+          address: companyData.address,
+          phone: companyData.phone,
         });
+
+        if (!updatedTenant) {
+          console.error("Failed to update tenant");
+        } else {
+          console.log("Tenant updated successfully:", updatedTenant);
+        }
 
         // 2. Update user profile
         await profileApi.update(currentProfile.id, {
@@ -115,13 +125,33 @@ const OnboardingLayout = ({
         });
 
         // 3. Create or update settings
-        await settingsApi.create({
-          tenant_id: currentTenant.id,
-          theme: preferencesData.theme || "light",
-          email_notifications: preferencesData.emailNotifications,
-          data_sharing: preferencesData.dataSharing,
-          auto_save: preferencesData.autoSave,
-        });
+        try {
+          const settings = await settingsApi.create({
+            tenant_id: currentTenant.id,
+            theme: preferencesData.theme || "light",
+            email_notifications: preferencesData.emailNotifications,
+            data_sharing: preferencesData.dataSharing,
+            auto_save: preferencesData.autoSave,
+          });
+
+          if (!settings) {
+            console.error(
+              "Failed to create settings, trying to update existing settings",
+            );
+            // Try to update existing settings if creation fails
+            const existingSettings = await settingsApi.get();
+            if (existingSettings) {
+              await settingsApi.update(existingSettings.id, {
+                theme: preferencesData.theme || "light",
+                email_notifications: preferencesData.emailNotifications,
+                data_sharing: preferencesData.dataSharing,
+                auto_save: preferencesData.autoSave,
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error creating/updating settings:", error);
+        }
 
         console.log("All onboarding data saved successfully");
       } catch (error) {

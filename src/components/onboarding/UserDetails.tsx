@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
 import { useOnboardingContext } from "./OnboardingLayout";
+import { supabase } from "@/lib/supabase";
 
 interface UserDetailsProps {
   onDataChange?: (data: any) => void;
@@ -77,14 +78,45 @@ const UserDetails = ({ onDataChange = () => {} }: UserDetailsProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="avatar-url">Profile Picture URL</Label>
-          <Input
-            id="avatar-url"
-            placeholder="Enter URL for your profile picture"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-          />
-          {avatarUrl && (
+          <Label htmlFor="avatar-upload">Profile Picture</Label>
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Input
+              id="avatar-upload"
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                try {
+                  // Create a unique file path
+                  const fileExt = file.name.split(".").pop();
+                  const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+                  const filePath = `avatars/${fileName}`;
+
+                  // Upload the file to Supabase Storage
+                  const { error: uploadError, data } = await supabase.storage
+                    .from("profiles")
+                    .upload(filePath, file);
+
+                  if (uploadError) {
+                    console.error("Error uploading file:", uploadError);
+                    return;
+                  }
+
+                  // Get the public URL
+                  const {
+                    data: { publicUrl },
+                  } = supabase.storage.from("profiles").getPublicUrl(filePath);
+
+                  setAvatarUrl(publicUrl);
+                } catch (error) {
+                  console.error("Error in file upload:", error);
+                }
+              }}
+            />
+          </div>
+          {avatarUrl ? (
             <div className="mt-2 flex justify-center">
               <img
                 src={avatarUrl}
@@ -94,6 +126,12 @@ const UserDetails = ({ onDataChange = () => {} }: UserDetailsProps) => {
                   e.currentTarget.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
                 }}
               />
+            </div>
+          ) : (
+            <div className="mt-2 flex justify-center">
+              <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center border">
+                <User className="h-10 w-10 text-muted-foreground" />
+              </div>
             </div>
           )}
         </div>

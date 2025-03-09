@@ -116,27 +116,45 @@ export const tenantApi = {
 
   // Update tenant
   update: async (id: string, updates: TenantUpdate): Promise<Tenant | null> => {
-    const { data, error } = await supabase
-      .from("tenants")
-      .update(updates)
-      .eq("id", id)
-      .select()
-      .single();
+    try {
+      console.log("Updating tenant with ID:", id, "Updates:", updates);
+      const { data, error } = await supabase
+        .from("tenants")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
 
-    if (error) return null;
-    return data;
+      if (error) {
+        console.error("Error updating tenant:", error);
+        return null;
+      }
+      return data;
+    } catch (err) {
+      console.error("Exception updating tenant:", err);
+      return null;
+    }
   },
 
   // Create tenant (during registration/onboarding)
   create: async (tenant: TenantInsert): Promise<Tenant | null> => {
-    const { data, error } = await supabase
-      .from("tenants")
-      .insert(tenant)
-      .select()
-      .single();
+    try {
+      console.log("Creating tenant:", tenant);
+      const { data, error } = await supabase
+        .from("tenants")
+        .insert(tenant)
+        .select()
+        .single();
 
-    if (error) return null;
-    return data;
+      if (error) {
+        console.error("Error creating tenant:", error);
+        return null;
+      }
+      return data;
+    } catch (err) {
+      console.error("Exception creating tenant:", err);
+      return null;
+    }
   },
 };
 

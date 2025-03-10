@@ -114,29 +114,40 @@ const ProfileDetails = () => {
       setIsSaving(true);
       setError(null);
 
-      // Generate a unique seed for Dicebear avatar
-      const nameSeed = `${profile.firstName || profile.email.split("@")[0] || "user"}_${Date.now()}`;
-      const dicebearUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameSeed}`;
-      console.log("Using Dicebear avatar URL:", dicebearUrl);
+      // Create a unique file path
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
 
-      // Update profile with Dicebear URL
-      setProfile({ ...profile, avatarUrl: dicebearUrl });
+      // Upload the file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("profiles")
+        .upload(filePath, file);
 
-      // Update the profile in the database with Dicebear URL
-      const updated = await profileApi.update(profile.id, {
-        avatar_url: dicebearUrl,
-      });
-
-      if (!updated) {
-        throw new Error("Failed to update profile with avatar");
+      if (uploadError) {
+        throw new Error("Error uploading file: " + uploadError.message);
       }
 
-      console.log("Profile updated with avatar URL:", dicebearUrl);
+      // Get the public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("profiles").getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      setProfile({ ...profile, avatarUrl: publicUrl });
+
+      // Update the profile in the database immediately
+      await profileApi.update(profile.id, {
+        avatar_url: publicUrl,
+        avatar_url_s3: publicUrl, // Update both avatar fields for consistency
+        avatar_key: filePath, // Store the storage key for future reference
+      });
+
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-      console.error("Error updating profile picture:", error);
-      setError("Failed to update profile picture. Please try again.");
+      console.error("Error uploading profile picture:", error);
+      setError("Failed to upload profile picture. Please try again.");
     } finally {
       setIsSaving(false);
     }

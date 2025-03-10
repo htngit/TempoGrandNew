@@ -5,8 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
-import { profileApi } from "@/lib/api";
-import { authApi } from "@/lib/api";
+import { profileApi, authApi } from "@/lib/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const ContactInformation = () => {

@@ -12,8 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings, User, Loader2 } from "lucide-react";
-import { authApi } from "@/lib/api";
-import { profileApi } from "@/lib/api";
+import { authApi, profileApi } from "@/lib/api";
 
 interface UserProfileDropdownProps {
   user?: {

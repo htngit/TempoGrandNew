@@ -1,9 +1,9 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User } from "lucide-react";
+import { User, RefreshCw } from "lucide-react";
 import { useOnboardingContext } from "./OnboardingLayout";
-import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
 
 interface UserDetailsProps {
   onDataChange?: (data: any) => void;
@@ -32,6 +32,21 @@ const UserDetails = ({ onDataChange = () => {} }: UserDetailsProps) => {
 
     return () => clearTimeout(timer);
   }, [handleChange]);
+
+  const generateNewAvatar = () => {
+    // Generate a unique seed for Dicebear avatar
+    const nameSeed = `${name || "user"}_${Date.now()}`;
+    const dicebearUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameSeed}`;
+    console.log("Using Dicebear avatar URL:", dicebearUrl);
+    setAvatarUrl(dicebearUrl);
+  };
+
+  // Generate an avatar if none exists
+  React.useEffect(() => {
+    if (!avatarUrl && name) {
+      generateNewAvatar();
+    }
+  }, [name, avatarUrl]);
 
   return (
     <div className="space-y-6">
@@ -78,62 +93,36 @@ const UserDetails = ({ onDataChange = () => {} }: UserDetailsProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="avatar-upload">Profile Picture</Label>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Input
-              id="avatar-upload"
-              type="file"
-              accept="image/*"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-
-                try {
-                  // Create a unique file path
-                  const fileExt = file.name.split(".").pop();
-                  const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-                  const filePath = `avatars/${fileName}`;
-
-                  // Upload the file to Supabase Storage
-                  const { error: uploadError, data } = await supabase.storage
-                    .from("profiles")
-                    .upload(filePath, file);
-
-                  if (uploadError) {
-                    console.error("Error uploading file:", uploadError);
-                    return;
-                  }
-
-                  // Get the public URL
-                  const {
-                    data: { publicUrl },
-                  } = supabase.storage.from("profiles").getPublicUrl(filePath);
-
-                  setAvatarUrl(publicUrl);
-                } catch (error) {
-                  console.error("Error in file upload:", error);
-                }
-              }}
-            />
-          </div>
-          {avatarUrl ? (
-            <div className="mt-2 flex justify-center">
-              <img
-                src={avatarUrl}
-                alt="Profile Preview"
-                className="h-20 w-20 rounded-full object-cover border"
-                onError={(e) => {
-                  e.currentTarget.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
-                }}
-              />
-            </div>
-          ) : (
-            <div className="mt-2 flex justify-center">
-              <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center border">
-                <User className="h-10 w-10 text-muted-foreground" />
+          <Label>Profile Avatar</Label>
+          <div className="flex flex-col items-center gap-4">
+            {avatarUrl ? (
+              <div className="mt-2 flex justify-center">
+                <img
+                  src={avatarUrl}
+                  alt="Profile Avatar"
+                  className="h-20 w-20 rounded-full object-cover border"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+                  }}
+                />
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="mt-2 flex justify-center">
+                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center border">
+                  <User className="h-10 w-10 text-muted-foreground" />
+                </div>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={generateNewAvatar}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Generate New Avatar
+            </Button>
+          </div>
         </div>
       </div>
     </div>

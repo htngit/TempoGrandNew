@@ -207,15 +207,24 @@ export const profileApi = {
     id: string,
     updates: ProfileUpdate,
   ): Promise<Profile | null> => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", id)
-      .select()
-      .single();
+    try {
+      console.log("Updating profile with ID:", id, "Updates:", updates);
+      const { data, error } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
 
-    if (error) return null;
-    return data;
+      if (error) {
+        console.error("Error updating profile:", error);
+        return null;
+      }
+      return data;
+    } catch (err) {
+      console.error("Exception updating profile:", err);
+      return null;
+    }
   },
 
   // Get profile by user ID

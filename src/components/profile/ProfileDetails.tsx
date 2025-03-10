@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Upload, Loader2 } from "lucide-react";
+import { User, Loader2, RefreshCw } from "lucide-react";
 import { authApi, profileApi } from "@/lib/api";
-import { supabase } from "@/lib/supabase";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const ProfileDetails = () => {
@@ -16,7 +15,6 @@ const ProfileDetails = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profile, setProfile] = useState({
     id: "",
@@ -28,7 +26,7 @@ const ProfileDetails = () => {
     location: "",
     avatarUrl: "",
     email: "",
-    phone: "", // Added phone field
+    phone: "",
   });
 
   useEffect(() => {
@@ -43,45 +41,22 @@ const ProfileDetails = () => {
           throw new Error("Could not fetch user data");
         }
 
-        console.log("User ID from auth:", user.id);
-
         // Get profile data using the user ID
         const currentProfile = await profileApi.getCurrent();
         if (!currentProfile) {
           throw new Error("Could not fetch profile data");
         }
 
-        // Verify the profile ID matches the user ID
-        if (currentProfile.id !== user.id) {
-          console.error("Profile ID doesn't match user ID", {
-            profileId: currentProfile.id,
-            userId: user.id,
-          });
-        }
-
-        console.log("Current profile data:", currentProfile);
-
         // Determine the avatar URL with proper fallbacks
         let avatarUrl = null;
         if (currentProfile.avatar_url && currentProfile.avatar_url !== "null") {
           avatarUrl = currentProfile.avatar_url;
-          console.log("Using avatar_url:", avatarUrl);
-        } else if (
-          currentProfile.avatar_url_s3 &&
-          currentProfile.avatar_url_s3 !== "null"
-        ) {
-          avatarUrl = currentProfile.avatar_url_s3;
-          console.log("Using avatar_url_s3:", avatarUrl);
         } else {
           // Use dicebear as fallback with the user's name as seed
           const nameSeed =
             currentProfile.first_name || user?.email?.split("@")[0] || "user";
           avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameSeed}`;
-          console.log("Using dicebear fallback:", avatarUrl);
         }
-
-        // Log the profile ID to verify it's a valid UUID
-        console.log("Profile ID:", currentProfile.id);
 
         setProfile({
           id: currentProfile.id,
@@ -93,7 +68,7 @@ const ProfileDetails = () => {
           location: currentProfile.location || "",
           avatarUrl: avatarUrl,
           email: user?.email || "",
-          phone: currentProfile.phone || "", // Added phone field
+          phone: currentProfile.phone || "",
         });
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -106,10 +81,7 @@ const ProfileDetails = () => {
     fetchProfile();
   }, []);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const generateNewAvatar = async () => {
     try {
       setIsSaving(true);
       setError(null);
@@ -117,7 +89,6 @@ const ProfileDetails = () => {
       // Generate a unique seed for Dicebear avatar
       const nameSeed = `${profile.firstName || profile.email.split("@")[0] || "user"}_${Date.now()}`;
       const dicebearUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameSeed}`;
-      console.log("Using Dicebear avatar URL:", dicebearUrl);
 
       // Update profile with Dicebear URL
       setProfile({ ...profile, avatarUrl: dicebearUrl });
@@ -131,12 +102,11 @@ const ProfileDetails = () => {
         throw new Error("Failed to update profile with avatar");
       }
 
-      console.log("Profile updated with avatar URL:", dicebearUrl);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
-      console.error("Error updating profile picture:", error);
-      setError("Failed to update profile picture. Please try again.");
+      console.error("Error generating new avatar:", error);
+      setError("Failed to generate new avatar. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -147,15 +117,25 @@ const ProfileDetails = () => {
       setIsSaving(true);
       setError(null);
 
-      // Save profile changes using the API
-      const updated = await profileApi.update(profile.id, {
+      // Prepare update data with only the fields that are actually used in the API
+      const updateData = {
         first_name: profile.firstName,
         last_name: profile.lastName,
         bio: profile.bio,
-        birth_date: profile.birthDate,
-        location: profile.location,
-        phone: profile.phone, // Add phone field to update
-      });
+        phone: profile.phone,
+      };
+
+      // Only include these fields if they have values
+      if (profile.birthDate) {
+        updateData["birth_date"] = profile.birthDate;
+      }
+
+      if (profile.location) {
+        updateData["location"] = profile.location;
+      }
+
+      // Save profile changes using the API
+      const updated = await profileApi.update(profile.id, updateData);
 
       if (!updated) {
         throw new Error("Failed to update profile");
@@ -230,31 +210,22 @@ const ProfileDetails = () => {
               </AvatarFallback>
             </Avatar>
             {isEditing && (
-              <>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Change Photo
-                    </>
-                  )}
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={generateNewAvatar}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Generate New Avatar
+                  </>
+                )}
+              </Button>
             )}
           </div>
 

@@ -157,7 +157,7 @@ const ProfileDetails = () => {
 
       // Get public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
-        .from(BUCKET_NAME)
+        .from("profiles")
         .getPublicUrl(filePath);
 
       // Update profile with new avatar URL

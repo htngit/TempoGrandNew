@@ -9,14 +9,20 @@ import { User, Upload, Loader2, RefreshCw } from "lucide-react";
 import { authApi, profileApi } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { v4 as uuidv4 } from "uuid";
 
 const ProfileDetails = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Supabase storage configuration
+  const STORAGE_URL = "https://wvncqkxjfbtonfniybjg.supabase.co/storage/v1/s3";
+  const BUCKET_NAME = "Profile Pictures";
 
   const [profile, setProfile] = useState({
     id: "",
@@ -111,6 +117,79 @@ const ProfileDetails = () => {
       setError("Failed to generate new avatar. Please try again.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      setError(null);
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please upload an image file');
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Image size should be less than 5MB');
+      }
+
+      // Generate a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile.id}_${uuidv4()}.${fileExt}`;
+      const filePath = `${profile.id}/${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { data, error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        throw new Error(`Error uploading file: ${uploadError.message}`);
+      }
+
+      // Get public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      setProfile({ ...profile, avatarUrl: publicUrl });
+
+      // Update the profile in the database with the new avatar URL
+      const updated = await profileApi.update(profile.id, {
+        avatar_url: publicUrl,
+        avatar_key: filePath,
+      });
+
+      if (!updated) {
+        throw new Error("Failed to update profile with new avatar");
+      }
+
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      setError(error instanceof Error ? error.message : "Failed to upload avatar. Please try again.");
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+  
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -212,22 +291,47 @@ const ProfileDetails = () => {
               </AvatarFallback>
             </Avatar>
             {isEditing && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={generateNewAvatar}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Generate New Avatar
-                  </>
-                )}
-              </Button>
+              <div className="flex flex-col gap-2 w-full">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={triggerFileInput}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Change Photo
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={generateNewAvatar}
+                  disabled={isSaving || isUploading}
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Generate New Avatar
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
           </div>
 

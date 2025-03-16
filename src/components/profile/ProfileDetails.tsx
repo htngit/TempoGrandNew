@@ -22,7 +22,7 @@ const ProfileDetails = () => {
   
   // Supabase storage configuration
   const STORAGE_URL = "https://wvncqkxjfbtonfniybjg.supabase.co/storage/v1/s3";
-  const BUCKET_NAME = "Profile Pictures";
+  const BUCKET_NAME = "profiles";
 
   const [profile, setProfile] = useState({
     id: "",
@@ -145,7 +145,7 @@ const ProfileDetails = () => {
 
       // Upload file to Supabase Storage
       const { data, error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
+        .from("profiles")
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true

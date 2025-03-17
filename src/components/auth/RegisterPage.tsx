@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Loader2, AlertCircle, CheckCircle } from "lucide-react";
-import { authApi } from "@/lib/api";
-import { tenantApi } from "@/lib/api";
+import { authApi, tenantApi, profileApi } from "@/lib/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface RegisterPageProps {
@@ -47,12 +46,35 @@ const RegisterPage = ({ onRegister }: RegisterPageProps) => {
 
       // Create a tenant for the new user
       if (user.id) {
+        console.log("Creating tenant for user ID:", user.id);
         const tenant = await tenantApi.create({
           name: `${name}'s Organization`,
         });
 
         if (!tenant) {
           console.error("Failed to create tenant");
+          throw new Error("Failed to create organization");
+        }
+        
+        console.log("Created tenant:", tenant);
+        
+        // Set the user's profile with admin role (making them the tenant owner)
+        const nameArr = name.split(' ');
+        const firstName = nameArr[0];
+        const lastName = nameArr.length > 1 ? nameArr.slice(1).join(' ') : '';
+        
+        const profile = await profileApi.update(user.id, {
+          first_name: firstName,
+          last_name: lastName,
+          role: 'admin', // Set as admin - this makes them the owner
+          tenant_id: tenant.id,
+          onboarding_complete: false, // They'll need to complete onboarding
+        });
+        
+        if (!profile) {
+          console.error("Failed to update user profile");
+        } else {
+          console.log("Updated user profile with admin role:", profile);
         }
       }
 

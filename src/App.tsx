@@ -25,6 +25,34 @@ function App() {
   // This would normally come from your auth provider
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check if there's a saved preference in localStorage
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme) {
+      return savedTheme === 'dark';
+    }
+    
+    // Otherwise check system preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  // Apply theme class to root document element
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  // Handle theme toggle
+  const handleThemeToggle = () => {
+    setIsDarkMode(prev => !prev);
+  };
 
   // Login process is now handled by the LoginPage component directly
   // This function is kept for backward compatibility
@@ -62,8 +90,8 @@ function App() {
             path="/dashboard"
             element={
               <Home
-                isDarkMode={isAuthenticated}
-                onThemeToggle={() => setIsAuthenticated(!isAuthenticated)}
+                isDarkMode={isDarkMode}
+                onThemeToggle={handleThemeToggle}
               />
             }
           >
@@ -79,8 +107,8 @@ function App() {
               path="settings"
               element={
                 <SettingsPage
-                  isDarkMode={isAuthenticated}
-                  onThemeToggle={() => setIsAuthenticated(!isAuthenticated)}
+                  isDarkMode={isDarkMode}
+                  onThemeToggle={handleThemeToggle}
                 />
               }
             />

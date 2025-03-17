@@ -1,6 +1,4 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -8,51 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-interface Integration {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  connected: boolean;
-  status: "active" | "inactive" | "pending";
-}
-
-const integrations: Integration[] = [
-  {
-    id: "1",
-    name: "Google Calendar",
-    description: "Sync your meetings and events",
-    icon: "https://api.dicebear.com/7.x/icons/svg?icon=google",
-    connected: true,
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Slack",
-    description: "Get notifications in your Slack channels",
-    icon: "https://api.dicebear.com/7.x/icons/svg?icon=slack",
-    connected: true,
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "Salesforce",
-    description: "Sync contacts and leads with Salesforce",
-    icon: "https://api.dicebear.com/7.x/icons/svg?icon=salesforce",
-    connected: false,
-    status: "inactive",
-  },
-  {
-    id: "4",
-    name: "Zapier",
-    description: "Connect with thousands of apps",
-    icon: "https://api.dicebear.com/7.x/icons/svg?icon=zap",
-    connected: false,
-    status: "inactive",
-  },
-];
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Construction, AlertCircle } from "lucide-react";
 
 const IntegrationSettings = () => {
   return (
@@ -62,51 +17,45 @@ const IntegrationSettings = () => {
         Connect your CRM with other tools and services
       </p>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {integrations.map((integration) => (
-          <Card key={integration.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="flex items-center space-x-4">
-                <img
-                  src={integration.icon}
-                  alt={integration.name}
-                  className="h-10 w-10"
-                />
-                <div>
-                  <CardTitle className="text-xl">{integration.name}</CardTitle>
-                  <CardDescription>{integration.description}</CardDescription>
-                </div>
-              </div>
-              <Switch checked={integration.connected} />
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between items-center">
-                <Badge
-                  variant="outline"
-                  className={`${integration.status === "active" ? "text-green-600" : "text-gray-500"}`}
-                >
-                  {integration.status === "active"
-                    ? "Connected"
-                    : "Not Connected"}
-                </Badge>
-                <Button variant="outline" size="sm">
-                  {integration.connected ? "Configure" : "Connect"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Alert variant="default" className="bg-yellow-50 border-yellow-200">
+        <Construction className="h-5 w-5 text-yellow-600" />
+        <AlertTitle className="text-yellow-800 font-medium">
+          Under Development
+        </AlertTitle>
+        <AlertDescription className="text-yellow-700">
+          The integrations feature is currently under development. We're working on connecting with popular services like Google Calendar, Slack, Salesforce, and more. Check back soon!
+        </AlertDescription>
+      </Alert>
 
       <Card>
         <CardHeader>
-          <CardTitle>API Keys</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-blue-600" />
+            Coming Soon
+          </CardTitle>
           <CardDescription>
-            Manage your API keys for direct integrations
+            Planned integrations for future releases
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button>Generate New API Key</Button>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-lg border p-4">
+              <div className="font-medium mb-1">Google Calendar</div>
+              <div className="text-sm text-muted-foreground">Sync your meetings and events</div>
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="font-medium mb-1">Slack</div>
+              <div className="text-sm text-muted-foreground">Get notifications in your Slack channels</div>
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="font-medium mb-1">Salesforce</div>
+              <div className="text-sm text-muted-foreground">Sync contacts and leads with Salesforce</div>
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="font-medium mb-1">Zapier</div>
+              <div className="text-sm text-muted-foreground">Connect with thousands of apps</div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

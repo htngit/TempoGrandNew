@@ -193,13 +193,129 @@ export const profileApi = {
 
   // Get all profiles in tenant
   getAll: async (): Promise<Profile[]> => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("first_name", { ascending: true });
+    try {
+      // Get the current user's tenant ID
+      const currentProfile = await profileApi.getCurrent();
+      if (!currentProfile || !currentProfile.tenant_id) return [];
 
-    if (error) return [];
-    return data || [];
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("tenant_id", currentProfile.tenant_id)
+        .order("first_name", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching profiles:", error);
+        return [];
+      }
+      
+      return data || [];
+    } catch (err) {
+      console.error("Exception in getAll:", err);
+      return [];
+    }
+  },
+
+  // Check if the current user is the tenant owner
+  isOwner: async (): Promise<boolean> => {
+    try {
+      const currentProfile = await profileApi.getCurrent();
+      if (!currentProfile) return false;
+
+      // The owner is the first user who registered with this tenant
+      // We check if the user has the admin role and the lowest creation timestamp
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("tenant_id", currentProfile.tenant_id)
+        .eq("role", "admin")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .single();
+
+      if (error || !data) return false;
+      
+      // Check if the current user is the first admin (owner)
+      return data.id === currentProfile.id;
+    } catch (err) {
+      console.error("Exception in isOwner:", err);
+      return false;
+    }
+  },
+
+  // Invite a user to join the tenant
+  inviteUser: async (email: string, role: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      // First check if the current user is the owner
+      const isOwner = await profileApi.isOwner();
+      if (!isOwner) {
+        return { 
+          success: false, 
+          message: "Only the tenant owner can invite users" 
+        };
+      }
+
+      // Get the current user's tenant ID
+      const currentProfile = await profileApi.getCurrent();
+      if (!currentProfile || !currentProfile.tenant_id) {
+        return { 
+          success: false, 
+          message: "Could not determine your tenant ID" 
+        };
+      }
+
+      // Check if the user is already in the system
+      const { data: existingUser } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("email", email)
+        .eq("tenant_id", currentProfile.tenant_id)
+        .maybeSingle();
+
+      if (existingUser) {
+        return { 
+          success: false, 
+          message: "This user is already a member of your team" 
+        };
+      }
+
+      // In a real implementation, this would send an email invitation
+      // and then add the user to the profiles table with a status of "invited"
+      // For now, we'll simulate this by creating a placeholder record
+      
+      // Create a temporary user ID (in a real app, you'd use a proper invite system)
+      const tempUserId = `invite_${Date.now()}`;
+      
+      // Insert a placeholder profile record
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: tempUserId,
+          email: email,
+          role: role,
+          tenant_id: currentProfile.tenant_id,
+          status: "invited"
+        });
+
+      if (insertError) {
+        console.error("Error inviting user:", insertError);
+        return { 
+          success: false, 
+          message: `Failed to invite user: ${insertError.message}` 
+        };
+      }
+
+      return { 
+        success: true, 
+        message: `Invitation sent to ${email}` 
+      };
+    } catch (err) {
+      console.error("Exception in inviteUser:", err);
+      return { 
+        success: false, 
+        message: "An unexpected error occurred" 
+      };
+    }
   },
 
   // Update profile

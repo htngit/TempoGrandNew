@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Upload, Loader2, RefreshCw } from "lucide-react";
+import { User, Upload, Loader2, RefreshCw, Mail, Phone, MapPin } from "lucide-react";
 import { authApi, profileApi } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { v4 as uuidv4 } from "uuid";
+import { Separator } from "@/components/ui/separator";
 
 const ProfileDetails = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -35,6 +36,7 @@ const ProfileDetails = () => {
     avatarUrl: "",
     email: "",
     phone: "",
+    address: "",
   });
 
   useEffect(() => {
@@ -66,17 +68,51 @@ const ProfileDetails = () => {
           avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameSeed}`;
         }
 
+        // Parse additional details from bio field if they exist (stored as JSON)
+        let extendedDetails = {
+          birthDate: "",
+          location: "",
+          address: ""
+        };
+        
+        try {
+          if (currentProfile.bio && currentProfile.bio.startsWith('{')) {
+            const bioData = JSON.parse(currentProfile.bio);
+            if (bioData.extendedDetails) {
+              extendedDetails = {
+                ...extendedDetails,
+                ...bioData.extendedDetails
+              };
+            }
+          }
+        } catch (e) {
+          console.warn("Could not parse extended details from bio", e);
+          // Bio isn't parseable JSON, just ignore and use defaults
+        }
+        
+        // Extract actual bio text
+        let bioText = currentProfile.bio || "";
+        if (bioText.startsWith('{') && bioText.includes('"bioText":')) {
+          try {
+            const bioData = JSON.parse(bioText);
+            bioText = bioData.bioText || "";
+          } catch (e) {
+            // If there's an error parsing, keep original bio text
+          }
+        }
+
         setProfile({
           id: currentProfile.id,
           firstName: currentProfile.first_name || "",
           lastName: currentProfile.last_name || "",
           username: user?.email?.split("@")[0] || "",
-          bio: currentProfile.bio || "",
-          birthDate: currentProfile.birth_date || "",
-          location: currentProfile.location || "",
+          bio: bioText,
+          birthDate: extendedDetails.birthDate,
+          location: extendedDetails.location,
           avatarUrl: avatarUrl,
           email: user?.email || "",
           phone: currentProfile.phone || "",
+          address: extendedDetails.address,
         });
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -198,22 +234,25 @@ const ProfileDetails = () => {
       setIsSaving(true);
       setError(null);
 
+      // Store additional profile details as JSON in the bio field
+      const extendedDetails = {
+        birthDate: profile.birthDate,
+        location: profile.location,
+        address: profile.address
+      };
+      
+      const bioData = {
+        bioText: profile.bio,
+        extendedDetails: extendedDetails
+      };
+      
       // Prepare update data with only the fields that are actually used in the API
       const updateData = {
         first_name: profile.firstName,
         last_name: profile.lastName,
-        bio: profile.bio,
+        bio: JSON.stringify(bioData),
         phone: profile.phone,
       };
-
-      // Only include these fields if they have values
-      if (profile.birthDate) {
-        updateData["birth_date"] = profile.birthDate;
-      }
-
-      if (profile.location) {
-        updateData["location"] = profile.location;
-      }
 
       // Save profile changes using the API
       const updated = await profileApi.update(profile.id, updateData);
@@ -248,7 +287,7 @@ const ProfileDetails = () => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Personal Information</CardTitle>
+          <CardTitle>My Profile</CardTitle>
           <Button
             variant={isEditing ? "default" : "outline"}
             onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
@@ -265,6 +304,7 @@ const ProfileDetails = () => {
             )}
           </Button>
         </div>
+        <CardDescription>Manage your personal and contact information</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {error && (
@@ -336,6 +376,7 @@ const ProfileDetails = () => {
           </div>
 
           <div className="flex-1 space-y-4 w-full">
+            <h3 className="text-lg font-medium">Personal Information</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
@@ -359,26 +400,6 @@ const ProfileDetails = () => {
                   disabled={!isEditing || isSaving}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" value={profile.email} disabled={true} />
-              <p className="text-xs text-muted-foreground">
-                Email cannot be changed
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                value={profile.phone}
-                onChange={(e) =>
-                  setProfile({ ...profile, phone: e.target.value })
-                }
-                disabled={!isEditing || isSaving}
-              />
             </div>
 
             <div className="space-y-2">
@@ -417,6 +438,60 @@ const ProfileDetails = () => {
                   }
                   disabled={!isEditing || isSaving}
                 />
+              </div>
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <h3 className="text-lg font-medium">Contact Information</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Mail className="h-5 w-5 text-muted-foreground mt-1" />
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profile.email}
+                    disabled={true}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Email cannot be changed
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Phone className="h-5 w-5 text-muted-foreground mt-1" />
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={profile.phone}
+                    onChange={(e) =>
+                      setProfile({ ...profile, phone: e.target.value })
+                    }
+                    disabled={!isEditing || isSaving}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 text-muted-foreground mt-1" />
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea
+                    id="address"
+                    value={profile.address}
+                    onChange={(e) =>
+                      setProfile({ ...profile, address: e.target.value })
+                    }
+                    disabled={!isEditing || isSaving}
+                    rows={3}
+                  />
+                </div>
               </div>
             </div>
           </div>

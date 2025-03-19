@@ -20,7 +20,7 @@ You can apply this migration in several ways:
 #### Option 1: Using Supabase CLI
 
 ```bash
-supabase db reset --db-url=postgresql://postgres:postgres@localhost:5432/postgres
+supabase db reset --db-url=postgresql://postgres:Xalesin123!@db.wvncqkxjfbtonfniybjg.supabase.co:5432/postgres
 supabase migration up --db-url=postgresql://postgres:postgres@localhost:5432/postgres
 ```
 
